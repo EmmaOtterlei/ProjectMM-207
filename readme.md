@@ -36,7 +36,9 @@ Ask the teacher for a recomandation
 
 ## Getting started
 Update user.mjs to fit the project
+
 Get the HttpErrorCodes finished
+
 Fix the TODOS in userRoute.mjs
 
 
