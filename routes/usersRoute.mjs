@@ -1,9 +1,16 @@
 import express, { response } from "express";
+import { SessionManager, StateTracker, DataStorage } from "./sessionMiddleware.js";
 import User from "../modules/user.mjs";
 import HttpCodes from "../modules/httpErrorCodes.mjs";
 
 
+
 const USER_API = express.Router();
+
+// Create instances of the session management classes
+const sessionManager = new SessionManager();
+const stateTracker = new StateTracker();
+const dataStorage = new DataStorage();
 
 const users = [];
 
@@ -15,12 +22,6 @@ USER_API.get('/:id', (req, res) => {
         res.status(HttpCodes.SuccessfulResponse.Ok).json(user);
     } else {
         res.status(HttpCodes.ClientSideErrorResponse.NotFound).end();
-    }
-    // Tip: All the information you need to get the id part of the request can be found in the documentation 
-    // https://expressjs.com/en/guide/routing.html (Route parameters)
-
-    /// TODO: 
-    // Return user object
 })
 
 USER_API.post('/', (req, res, next) => {
