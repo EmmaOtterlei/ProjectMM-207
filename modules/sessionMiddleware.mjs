@@ -4,6 +4,7 @@ class SessionManager {
     }
   
     createSession(user_id) {
+        //endre 'crypto'
       const session_id = require('crypto').randomBytes(16).toString('hex');
       this.sessions[session_id] = { user_id, current_question: 0 };
       return session_id;

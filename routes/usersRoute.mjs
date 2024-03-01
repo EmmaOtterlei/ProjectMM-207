@@ -2,10 +2,11 @@ import express, { response } from "express";
 import { SessionManager, StateTracker, DataStorage } from "./sessionMiddleware.js";
 import User from "../modules/user.mjs";
 import HttpCodes from "../modules/httpErrorCodes.mjs";
-
+import Logger from "../modules/Logger.mjs";
 
 
 const USER_API = express.Router();
+USER_API.use(express.json()); // This makes it so that express parses all incoming payloads as JSON for this route.
 
 // Create instances of the session management classes
 const sessionManager = new SessionManager();
@@ -13,6 +14,11 @@ const stateTracker = new StateTracker();
 const dataStorage = new DataStorage();
 
 const users = [];
+
+USER_API.get('/', (req, res, next) => {
+    Logger.log("Demo of logging tool");
+    Logger.log("A important msg", Logger.LOGGING_LEVELS.CRTICAL);
+})
 
 USER_API.get('/:id', (req, res) => {
     const userId = req.params.id;
@@ -22,22 +28,24 @@ USER_API.get('/:id', (req, res) => {
         res.status(HttpCodes.SuccessfulResponse.Ok).json(user);
     } else {
         res.status(HttpCodes.ClientSideErrorResponse.NotFound).end();
+    }
 })
 
 USER_API.post('/', (req, res, next) => {
 
-    // This is using javascript object destructuring.
-    // Recomend reading up https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#syntax
-    // https://www.freecodecamp.org/news/javascript-object-destructuring-spread-operator-rest-parameter/
     const { email, pswHash, UserName } = req.body;
 
     if (email && pswHash && UserName) {
         const user = new User(email, pswHash, UserName);
-        
-        ///TODO: Does the user exist?
+    
         const exists = users.some(existingUser => existingUser.email === email)
 
         if (!exists) {
+            // Create a new session for the user
+            const session_id = sessionManager.createSession(user.id);
+            // Store user-specific data in the session
+            dataStorage.storeData(session_id, 'user', user);
+
             users.push(user);
             res.status(HttpCodes.SuccesfullRespons.Ok).end();
         } else {
@@ -51,7 +59,7 @@ USER_API.post('/', (req, res, next) => {
 });
 
 USER_API.put('/:id', (req, res) => {
-    /// TODO: Edit user
+
     const userId = req.params.id;
     const updatedUserData = req.body;
 
@@ -59,6 +67,13 @@ USER_API.put('/:id', (req, res) => {
 
     if (index !== -1) {
         users[index] = { ...users[index], ...updatedUserData };
+       
+     // Get the session ID associated with the user
+     const session_id = users[index].session_id;
+     // Track user progress using the middleware
+     stateTracker.trackProgress(session_id, { current_question: updatedUserData.current_question });
+       
+       
         res.status(HttpCodes.SuccessfulResponse.NoContent).end();
     } else {
         res.status(HttpCodes.ClientSideErrorResponse.NotFound).end();
@@ -67,7 +82,7 @@ USER_API.put('/:id', (req, res) => {
 });
 
 USER_API.delete('/:id', (req, res) => {
-    /// TODO: Delete user.
+
     const userId = req.params.id;
 
     const index = users.findIndex(user => user.id === userId);
