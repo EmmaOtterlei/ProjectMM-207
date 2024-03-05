@@ -1,31 +1,40 @@
+// Import necessary modules or dependencies
+import DBManager from './storageManager.mjs'; // Adjust the path based on your project structure
+
+// Define the User class
 class User {
-    constructor(email, pswHash, UserName) {
-      this.email = email || "";
-      this.pswHash = pswHash || "";
-      this.UserName = UserName || "";
-      this.id = null; // Adding an id property
-  
-      // Alternatively, you can initialize these properties in the constructor if needed
-      // this.email = "";
-      // this.pswHash = "";
-      // this.UserName = "";
-    }
-  
-    async save() {
-      if (this.id == null) {
-        // If the user doesn't have an ID, create a new user
+  // Constructor initializes user properties with default values
+  constructor(email = "", passwordHash = "", userName = "") {
+    this.email = email;
+    this.passwordHash = passwordHash;
+    this.userName = userName;
+    this.id = null; // Adding an id property to represent the user's identifier in the database
+  }
+
+  // Async method to save or update the user in the database
+  async save() {
+    try {
+      // If the user doesn't have an ID, create a new user
+      if (!this.id) {
         const createdUser = await DBManager.createUser(this);
         this.id = createdUser.id; // Assuming DBManager.createUser returns the user with an ID
       } else {
         // If the user has an ID, update the existing user
         await DBManager.updateUser(this);
       }
-    }
-  
-    delete() {
-      // Delete the user using the DBManager
-      DBManager.deleteUser(this);
+    } catch (error) {
+      // Handle errors that may occur during the database operations
+      console.error("Error saving/updating user:", error);
+      // You might want to add more sophisticated error handling here, depending on your application's requirements
     }
   }
-  
-  export default User;
+
+  // Method to delete the user from the database
+  delete() {
+    // Delete the user using the DBManager
+    DBManager.deleteUser(this);
+  }
+}
+
+// Export the User class for use in other modules
+export default User;

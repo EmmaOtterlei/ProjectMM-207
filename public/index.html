@@ -7,41 +7,42 @@
     <title>My app</title>
 </head>
 
-
 <body>
 
     <div>
-        Name : <input type="text" id="name"><br>
+        Name: <input type="text" id="name"><br>
         Email: <input type="email" id="email"><br />
         Password: <input type="password" id="pswHash"><br />
         <button id="createUserButton">Create User</button>
     </div>
 
     <script>
-
-
-
-
         const createUserButton = document.getElementById("createUserButton");
 
         createUserButton.onclick = async function (e) {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const pswHash = document.getElementById("pswHash").value;
 
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const pswHash = document.getElementById("pswHash").value;
+    const user = { name, email, pswHash };
 
-            const user = { name, email, pswHash };
-
-            const respon = await postTo("/user", user);
-
-
-
-
+    try {
+        const response = await postTo("/user", user);
+        if (response.ok) {
+            const responseData = await response.json();
+            console.log(responseData);
+        } else {
+            console.error("Failed to create user. Server returned:", response.status, response.statusText);
+            // Handle the error appropriately
         }
-
+    } catch (error) {
+        console.error("Error during POST request:", error);
+        // Handle the error appropriately
+    }
+}
 
         async function postTo(url, data) {
-            const header = {
+            const headers = {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,11 +50,9 @@
                 body: JSON.stringify(data),
             };
 
-
-            const respon = await fetch(url, header);
-            return respon;
+            const response = await fetch(url, headers);
+            return response;
         }
-
     </script>
 
 </body>

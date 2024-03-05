@@ -1,5 +1,5 @@
 import express, { response } from "express";
-import { SessionManager, StateTracker, DataStorage } from "./sessionMiddleware.js";
+import { SessionManager, StateTracker, DataStorage } from "..modules/sessionMiddleware.mjs";
 import User from "../modules/user.mjs";
 import HttpCodes from "../modules/httpErrorCodes.mjs";
 import Logger from "../modules/Logger.mjs";
@@ -31,31 +31,34 @@ USER_API.get('/:id', (req, res) => {
     }
 })
 
+
 USER_API.post('/', (req, res, next) => {
+    try {
+        const { email, pswHash, UserName } = req.body;
 
-    const { email, pswHash, UserName } = req.body;
-
-    if (email && pswHash && UserName) {
-        const user = new User(email, pswHash, UserName);
-    
-        const exists = users.some(existingUser => existingUser.email === email)
-
-        if (!exists) {
-            // Create a new session for the user
-            const session_id = sessionManager.createSession(user.id);
-            // Store user-specific data in the session
-            dataStorage.storeData(session_id, 'user', user);
-
-            users.push(user);
-            res.status(HttpCodes.SuccesfullRespons.Ok).end();
-        } else {
-            res.status(HttpCodes.ClientSideErrorRespons.BadRequest).end();
+        if (!email || !pswHash || !UserName) {
+            return res.status(HttpCodes.ClientSideErrorRespons.BadRequest).json({ error: "Missing required fields" });
         }
 
-    } else {
-        res.status(HttpCodes.ClientSideErrorRespons.BadRequest).send("Mangler data felt").end();
-    }
+        const exists = users.some(existingUser => existingUser.email === email);
 
+        if (exists) {
+            return res.status(HttpCodes.ClientSideErrorRespons.BadRequest).json({ error: "User with this email already exists" });
+        }
+
+        const user = new User(email, pswHash, UserName);
+
+        // Create a new session for the user
+        const session_id = sessionManager.createSession(user.id);
+        // Store user-specific data in the session
+        dataStorage.storeData(session_id, 'user', user);
+
+        users.push(user);
+        return res.status(HttpCodes.SuccesfullRespons.Ok).end();
+    } catch (error) {
+        console.error("Error creating user:", error);
+        return res.status(HttpCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
+    }
 });
 
 USER_API.put('/:id', (req, res) => {
@@ -76,7 +79,7 @@ USER_API.put('/:id', (req, res) => {
        
         res.status(HttpCodes.SuccessfulResponse.NoContent).end();
     } else {
-        res.status(HttpCodes.ClientSideErrorResponse.NotFound).end();
+        return res.status(HttpCodes.ClientSideErrorResponse.NotFound).json({ error: "User not found" });
     }
 
 });
