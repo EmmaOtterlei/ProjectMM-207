@@ -5,7 +5,7 @@ import printDeveloperStartupInportantInformationMSG from "./modules/developerHel
 import USER_API from './routes/usersRoute.mjs';
 
 // Import session middleware classes
-import { SessionManager, StateTracker, DataStorage } from '../modules/sessionMiddleware.mjs';
+import { SessionManager, StateTracker, DataStorage } from './modules/sessionMiddleware.mjs';
 
 // Print developer startup information
 printDeveloperStartupInportantInformationMSG();
@@ -40,6 +40,6 @@ server.use((err, req, res, next) => {
 });
 
 // Start the server
-server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+server.listen(server.get('port'), function ()  {
+    console.log(`Server running on http://localhost:${port}`, server.get('port'));
 });

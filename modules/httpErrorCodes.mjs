@@ -1,4 +1,4 @@
-class HttpCodes {
+class HTTPCodes {
     // Informational Responses
     static InformationalResponse = {
         Continue: 100,
@@ -87,4 +87,4 @@ const HTTPMethods = {
     DELETE: "DELETE"
 }
 
-export { HttpCodes as HTTPCodes, HTTPMethods };
+export { HTTPCodes, HTTPMethods };

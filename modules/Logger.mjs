@@ -30,37 +30,21 @@ class SuperLogger {
         CRITICAL: 999,
     };
 
-    // Global logging threshold level
-    #globalThreshold = SuperLogger.LOGGING_LEVELS.NORMAL;
-    // Array to store different loggers
-    #loggers;
-
-    // Singleton pattern to ensure a single instance
-    static instance = null;
-
     constructor() {
-        // Ensure there is only one instance of SuperLogger
-        if (SuperLogger.instance == null) {
-            SuperLogger.instance = this;
-            // Initialize loggers array and global logging threshold
-            this.#loggers = [];
-            this.#globalThreshold = SuperLogger.LOGGING_LEVELS.NORMAL;
-        }
-        // Return the instance to enforce the singleton pattern
-        return SuperLogger.instance;
+        this.#globalThreshold = SuperLogger.LOGGING_LEVELS.NORMAL;
+        this.#loggers = [];
     }
 
-    // Log messages with a specified logging level
+    static instance = new SuperLogger(); // Initialize the instance
+
+    #globalThreshold;
+    #loggers;
+
     static log(msg, logLevel = SuperLogger.LOGGING_LEVELS.NORMAL) {
-        // Get the instance of SuperLogger
         let logger = SuperLogger.instance;
-        // Check if the global threshold is higher than the specified log level
         if (logger.#globalThreshold > logLevel) {
-            // Do not log if the threshold is higher
-            return;
+            logger.#writeToLog(msg);
         }
-        // Log the message
-        logger.#writeToLog(msg);
     }
 
     // Create an automatic logger with a default threshold
