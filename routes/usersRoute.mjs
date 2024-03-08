@@ -3,6 +3,8 @@ import { SessionManager, StateTracker, DataStorage } from "../modules/sessionMid
 import User from "../modules/user.mjs";
 import { HTTPCodes } from "../modules/httpErrorCodes.mjs";
 import Logger from "../modules/Logger.mjs";
+import DBManager from '../modules/storageManager.mjs'; // Adjust the path based on your project structure
+
 
 const USER_API = express.Router();
 USER_API.use(express.json());
@@ -17,6 +19,12 @@ USER_API.get('/', (req, res, next) => {
     Logger.log("Demo of logging tool");
     Logger.log("An important message", Logger.LOGGING_LEVELS.CRITICAL);
 });
+
+USER_API.get('/email', (req, res, next) => {
+    const user = DBManager.getUserFromEmail("test");
+    console.log("user = ", user);
+});
+
 
 USER_API.post('/', async (req, res, next) => {
     try {

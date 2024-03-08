@@ -15,6 +15,7 @@ class DBManager {
 
     try {
       await client.connect();
+      console.log("Executing query:", query, "with params:", params);
       const output = await client.query(query, params);
       return output.rows;
     } catch (error) {
@@ -26,12 +27,12 @@ class DBManager {
   }
 
   async updateUser(user) {
-    if (!user.id || !user.email || !user.passwordHash || !user.userName) {
+    if (!user.id || !user.email || !user.pwsHash || !user.userName) {
       throw new Error("Invalid user object for update operation.");
     }
   
     const query = 'UPDATE "public"."Users" SET "name" = $1, "email" = $2, "password" = $3 WHERE id = $4 RETURNING *;';
-    const result = await this.executeQuery(query, [user.userName, user.email, user.passwordHash, user.id]);
+    const result = await this.executeQuery(query, [user.userName, user.email, user.pwsHash, user.id]);
   
     if (result.length !== 1) {
       throw new Error("Failed to update user.");
@@ -48,10 +49,22 @@ class DBManager {
   
   async createUser(user) {
     const query = 'INSERT INTO "public"."Users"("name", "email", "password") VALUES($1::Text, $2::Text, $3::Text) RETURNING id;';
-    const result = await this.executeQuery(query, [user.userName, user.email, user.passwordHash]);
+    const result = await this.executeQuery(query, [user.userName, user.email, user.pwsHash]);
   
     if (result.length === 1) {
       user.id = result[0].id;
+    }
+  
+    return user;
+  }
+
+  async getUserFromEmail(email) {
+    const query = 'SELECT * FROM users WHERE email = $1';
+    const result = await this.executeQuery(query, [email]);
+    let user = null;
+  
+    if (result.length === 1) {
+      user = result[0];
     }
   
     return user;
