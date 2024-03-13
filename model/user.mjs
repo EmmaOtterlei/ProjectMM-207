@@ -1,4 +1,4 @@
-import DBManager from './DBManager.mjs';
+import DBManager from '../modules/storageManager.mjs';
 
 class User {
     constructor(userName = "", email = "", pwsHash = "") {

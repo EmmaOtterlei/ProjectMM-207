@@ -1,54 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My app</title>
+    <title>Flashcard</title>
 </head>
+
 <body>
-    <div>
-        Username: <input type="text" id="userName"><br>
-        Email: <input type="email" id="email"><br />
-        Password: <input type="password" id="pwsHash"><br />
-        <button id="createUserButton">Create User</button>
-    </div>
-    <script>
-        const createUserButton = document.getElementById("createUserButton");
-
-        createUserButton.onclick = async function (e) {
-            const userName = document.getElementById("userName").value;
-            const email = document.getElementById("email").value;
-            const pwsHash = document.getElementById("pwsHash").value;
-
-            const user = { email, pwsHash, userName };
-
-            try {
-                const response = await postTo("/user", user);
-                if (response.ok) {
-                    const responseData = await response.json();
-                    console.log(responseData);
-                } else {
-                    console.error("Failed to create user. Server returned:", response.status, response.statusText);
-                    // Handle the error appropriately
-                }
-            } catch (error) {
-                console.error("Error during POST request:", error);
-                // Handle the error appropriately
-            }
-        };
-
-        async function postTo(url, data) {
-            const headers = {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            };
-
-            const response = await fetch(url, headers);
-            return response;
-        }
-    </script>
+    <script src="../source/app.mjs" type="module"></script>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
-import DBManager from './DBManager.mjs';
+import DBManager from '../modules/storageManager.mjs';
 
 class Deck {
     constructor(userId = "", name = "", topic = "", isPublic = false) {

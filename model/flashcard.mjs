@@ -1,4 +1,4 @@
-import DBManager from './DBManager.mjs';
+import DBManager from '../modules/storageManager.mjs';
 
 class Flashcard {
     constructor(deckId = "", question = "", answer = "") {

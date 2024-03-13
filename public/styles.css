@@ -1,0 +1,28 @@
+#sidebar {
+    width: 200px;
+    background-color: #f0f0f0;
+    padding: 20px;
+    height: 100vh;
+    float: left;
+}
+
+#sidebar button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #008cba;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+#sidebar button:hover {
+    background-color: #005f73;
+}
+
+#content {
+    margin-left: 220px;
+    padding: 20px;
+}
