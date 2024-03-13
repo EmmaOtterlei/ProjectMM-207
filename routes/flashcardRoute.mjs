@@ -1,66 +1,81 @@
-// routes/otherRoute.mjs
-
 import express from 'express';
-import User from "../modules/user.mjs";
+import Flashcard from "../model/flashcard.mjs";
+import { HTTPCodes } from "../modules/httpErrorCodes.mjs"; // Import HTTP status codes module
 
-const router = express.Router();
-
-// In-memory storage for flashcards (replace this with a database in a real app)
-let flashcards = [];
+const FLASHCARD_API = express.Router();
+FLASHCARD_API.use(express.json());
 
 // GET all flashcards
-router.get('/', (req, res) => {
-    res.status(200).json(flashcards);
+FLASHCARD_API.get('/', async (req, res) => {
+    try {
+        const flashcards = await Flashcard.getAll();
+        res.status(HTTPCodes.SuccessfulResponse.Ok).json(flashcards); // Use HTTP status code from the imported module
+    } catch (error) {
+        console.error("Error fetching flashcards:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: 'Internal server error' }); // Use HTTP status code from the imported module
+    }
 });
 
 // GET a specific flashcard by ID
-router.get('/:id', (req, res) => {
-    const cardId = req.params.id;
-    const card = flashcards.find(card => card.id === cardId);
-
-    if (card) {
-        res.status(200).json(card);
-    } else {
-        res.status(404).json({ error: 'Flashcard not found' });
+FLASHCARD_API.get('/:id', async (req, res) => {
+    const flashcardId = req.params.id;
+    try {
+        const flashcard = await Flashcard.getById(flashcardId);
+        if (flashcard) {
+            res.status(HTTPCodes.SuccessfulResponse.Ok).json(flashcard); // Use HTTP status code from the imported module
+        } else {
+            res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: 'Flashcard not found' }); // Use HTTP status code from the imported module
+        }
+    } catch (error) {
+        console.error("Error fetching flashcard:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: 'Internal server error' }); // Use HTTP status code from the imported module
     }
 });
 
 // POST a new flashcard
-router.post('/', (req, res) => {
-    const newCard = req.body; // Assuming the request body contains the flashcard data
-    newCard.id = generateUniqueId(); // Generate a unique ID for the flashcard
-
-    flashcards.push(newCard);
-    res.status(201).json(newCard);
+FLASHCARD_API.post('/', async (req, res) => {
+    const { deckId, question, answer } = req.body;
+    try {
+        const newFlashcard = new Flashcard(deckId, question, answer);
+        await newFlashcard.save();
+        res.status(HTTPCodes.SuccessfulResponse.Created).json(newFlashcard); // Use HTTP status code from the imported module
+    } catch (error) {
+        console.error("Error creating flashcard:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: 'Internal server error' }); // Use HTTP status code from the imported module
+    }
 });
 
 // PUT (update) a flashcard by ID
-router.put('/:id', (req, res) => {
-    const cardId = req.params.id;
-    const updatedCardData = req.body; // Assuming the request body contains the updated flashcard data
-
-    const index = flashcards.findIndex(card => card.id === cardId);
-
-    if (index !== -1) {
-        flashcards[index] = { ...flashcards[index], ...updatedCardData };
-        res.status(200).json(flashcards[index]);
-    } else {
-        res.status(404).json({ error: 'Flashcard not found' });
+FLASHCARD_API.put('/:id', async (req, res) => {
+    const flashcardId = req.params.id;
+    const updatedData = req.body;
+    try {
+        const flashcard = await Flashcard.getById(flashcardId);
+        if (!flashcard) {
+            return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: 'Flashcard not found' }); // Use HTTP status code from the imported module
+        }
+        flashcard.update(updatedData);
+        res.status(HTTPCodes.SuccessfulResponse.Ok).json(flashcard); // Use HTTP status code from the imported module
+    } catch (error) {
+        console.error("Error updating flashcard:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: 'Internal server error' }); // Use HTTP status code from the imported module
     }
 });
 
 // DELETE a flashcard by ID
-router.delete('/:id', (req, res) => {
-    const cardId = req.params.id;
-
-    flashcards = flashcards.filter(card => card.id !== cardId);
-
-    res.status(204).end(); // No content for successful deletion
+FLASHCARD_API.delete('/:id', async (req, res) => {
+    const flashcardId = req.params.id;
+    try {
+        const flashcard = await Flashcard.getById(flashcardId);
+        if (!flashcard) {
+            return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: 'Flashcard not found' }); // Use HTTP status code from the imported module
+        }
+        await flashcard.delete();
+        res.status(HTTPCodes.SuccessfulResponse.NoContent).end(); // Use HTTP status code from the imported module
+    } catch (error) {
+        console.error("Error deleting flashcard:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: 'Internal server error' }); // Use HTTP status code from the imported module
+    }
 });
 
-// Helper function to generate a unique ID
-function generateUniqueId() {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
-
-export default router;
+export default FLASHCARD_API;

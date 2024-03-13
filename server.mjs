@@ -3,6 +3,7 @@ import 'dotenv/config';
 import SuperLogger from './modules/Logger.mjs';
 import printDeveloperStartupInportantInformationMSG from "./modules/developerHelpers.mjs";
 import USER_API from './routes/usersRoute.mjs';
+import FLASHCARD_API from './routes/flashcardRoute.mjs';
 
 // Import session middleware classes
 import { SessionManager, StateTracker, DataStorage } from './modules/sessionMiddleware.mjs';
@@ -27,6 +28,8 @@ server.use(express.static('public'));
 // Tell the server to use the USER_API (all URLs using this code will have to have /user after the base address)
 server.use("/user", USER_API);
 
+server.use("/flashcard", FLASHCARD_API);
+
 // Create instances of the session management classes
 const sessionManager = new SessionManager();
 const stateTracker = new StateTracker();
@@ -40,6 +43,6 @@ server.use((err, req, res, next) => {
 });
 
 // Start the server
-server.listen(server.get('port'), function ()  {
-    console.log(`Server running on http://localhost:${port}`, server.get('port'));
+server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
 });
