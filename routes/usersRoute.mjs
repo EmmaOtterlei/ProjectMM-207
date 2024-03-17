@@ -3,21 +3,10 @@ import { HTTPCodes } from "../modules/httpErrorCodes.mjs";
 //import Logger from "../modules/Logger.mjs";
 import { User } from "../model/user.mjs";
 import { hashPassword } from "../modules/pwsHash.mjs";
+import DBManager from "../modules/storageManager.mjs"
 
 const USER_API = express.Router();
 USER_API.use(express.json());
-
-/*
-// GET all users
-USER_API.get('/', async (req, res) => {
-    try {
-        const allUsers = await User.getAllUsers();
-        res.status(HTTPCodes.SuccessfulResponse.Ok).json(allUsers);
-    } catch (error) {
-        console.error("Error fetching all users:", error);
-        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
-    }
-}); */
 
 // POST a new user
 USER_API.post('/', async (req, res) => {
@@ -54,31 +43,25 @@ USER_API.post('/login', async (req, res) => {
     try {
         const user = await User.findUserByEmail(email);
         if (!user) {
-            return res.status(401).json({ error: "Invalid credentials" });
+            return res.status(HTTPCodes.ClientSideErrorResponse.Unauthorized).json({ error: "Invalid credentials" });
         }
 
         console.log(`User object:`, user);
         const hashedInputPassword = hashPassword(password);
         console.log(`Input hash: ${hashedInputPassword}`);
-        // Correctly access the 'pwshash' property
-        console.log(`Stored hash: ${user.pwshash}`); // Corrected to 'pwshash'
+        console.log(`Stored hash: ${user.pwshash}`); // Ensuring this matches the property name exactly as in your user object
 
         if (user.pwshash !== hashedInputPassword) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        // Proceed with login success logic here
-        res.json({ message: "Login successful" });
+        // Explicitly setting the response status to 200 OK for successful login
+        res.status(HTTPCodes.SuccessfulResponse.Ok).json({ message: "Login successful", userId: user.id });
     } catch (error) {
         console.error("Error during login process:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal server error" });
     }
 });
-
-
-
-
-
 
 USER_API.post('/hashPassword', (req, res) => {
     const { password } = req.body;
@@ -90,27 +73,41 @@ USER_API.post('/hashPassword', (req, res) => {
         res.json({ hashedPassword });
     } catch (error) {
         console.error("Error hashing password:", error);
-        res.status(500).json({ error: "Error hashing password" });
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Error hashing password" });
     }
 });
 
+
 // PUT (update) a user
+// In usersRoute.mjs, ensure you're correctly handling the request body
 USER_API.put('/:id', async (req, res) => {
     try {
         const userId = req.params.id;
-        const updatedUserData = req.body;
+        const { email, pwsHash, userName } = req.body;
 
-        // Update the user
-        const user = await User.findUserById(userId);
-        if (!user) {
+        // Fetch existing user data
+        let existingUser = await User.findUserById(userId);
+        if (!existingUser) {
             return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: "User not found" });
         }
 
-        // Update user data
-        Object.assign(user, updatedUserData);
-        await user.save();
+        // Prepare the update payload, merging provided values with existing ones
+        let userToUpdate = {
+            id: userId,
+            email: email || existingUser.email,
+            userName: userName || existingUser.userName,
+            pwsHash: existingUser.pwsHash // Initially set to current hash
+        };
 
-        res.status(HTTPCodes.SuccessfulResponse.NoContent).end();
+        // If a new password is provided, hash it
+        if (pwsHash) {
+            userToUpdate.pwsHash = await hashPassword(pwsHash);
+        }
+
+        // Perform the update operation
+        await DBManager.updateUser(userToUpdate);
+
+        res.status(HTTPCodes.SuccessfulResponse.Ok).json({ message: "User updated successfully", user: userToUpdate });
     } catch (error) {
         console.error("Error updating user:", error);
         res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
@@ -127,8 +124,9 @@ USER_API.delete('/:id', async (req, res) => {
         if (!user) {
             return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: "User not found" });
         }
+        const deleteUser = new User(userId);
+        await deleteUser.delete();
 
-        await user.delete();
 
         res.status(HTTPCodes.SuccessfulResponse.NoContent).end();
     } catch (error) {

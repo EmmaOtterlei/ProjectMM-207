@@ -23,21 +23,19 @@
 
     <template id="MenuNotLoggedIn">
         <div>
-            <div id="MenuButton">
                 <button type="button" id="Login">Login</button>
-                <button type="button" id="Create user">Create user</button>
+                <button type="button" id="Createuser">Create user</button>
                 <button type="button" id="Decks">Decks</button>
-                <button type="button" id="Flashcard Creation">Flashcard Creation</button>
+                <button type="button" id="FlashcardCreation">Flashcard Creation</button>
         </div>
     </template>
 
     <template id="MenuLoggedIn">
         <div>
-            <div id="MenuButton">
-                <button type="button" id="My User">My User</button>
-                <button type="button" id="Log out">Log out</button>
+                <button type="button" id="MyUser">My User</button>
+                <button type="button" id="Logout">Log out</button>
                 <button type="button" id="Decks">Decks</button>
-                <button type="button" id="Flashcard Creation">Flashcard Creation</button>
+                <button type="button" id="FlashcardCreation">Flashcard Creation</button>
         </div>
     </template>
 
@@ -93,6 +91,32 @@
             <input type="checkbox" id="visibilityToggle">
             <button id="saveButton">Save</button>
         </div>
+    </template>
+
+    <template id="userTemplate">
+            <div class="user-info">
+                <h2>User Profile</h2>
+                <p><strong>Email:</strong> <span id="userEmail">user@example.com</span></p>
+                <p><strong>Username:</strong> <span id="userName">JohnDoe</span></p>
+        
+                <h3>Change Password</h3>
+                <form id="changePasswordForm">
+                    <label for="newPassword">New Password:</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                    <input type="submit" value="Change Password">
+                </form>
+        
+                <h3>Update Information</h3>
+                <form id="updateUserInfoForm">
+                    <label for="newEmail">New Email:</label>
+                    <input type="email" id="newEmail" name="newEmail">
+                    <label for="newUsername">New Username:</label>
+                    <input type="text" id="newUsername" name="newUsername">
+                    <input type="submit" value="Update Information">
+                </form>
+
+                <button id="deleteButton">Delete User</button>
+            </div>
     </template>
 
 

@@ -1,58 +1,60 @@
 class SessionManager {
-  constructor() {
-      this.sessions = {};
+    constructor() {
+        this.sessions = {};
+    }
+  
+    createSession(userId) {
+        const sessionId = this.generateSessionId();
+        this.sessions[sessionId] = { userId, currentQuestion: 0 };
+        return sessionId;
+    }
+  
+    validateSession(sessionId) {
+        return this.sessions[sessionId];
+    }
+  
+    destroySession(sessionId) {
+        delete this.sessions[sessionId];
+    }
+  
+    generateSessionId() {
+        const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let sessionId = '';
+        for (let i = 0; i < 16; i++) {
+            sessionId += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return sessionId;
+    }
   }
-
-  createSession(user_id) {
-      const session_id = this.generateSessionId();
-      this.sessions[session_id] = { user_id, current_question: 0 };
-      return session_id;
+  
+  class StateTracker {
+    constructor(sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+  
+    trackProgress(sessionId, quizState) {
+        if (sessionId in this.sessionManager.sessions) {
+            this.sessionManager.sessions[sessionId].currentQuestion = quizState.currentQuestion;
+        }
+    }
   }
-
-  validateSession(session_id) {
-      return this.sessions[session_id];
+  
+  class DataStorage {
+    constructor() {
+        this.data = {};
+    }
+  
+    storeData(sessionId, key, value) {
+        if (!(sessionId in this.data)) {
+            this.data[sessionId] = {};
+        }
+        this.data[sessionId][key] = value;
+    }
+  
+    retrieveData(sessionId, key) {
+        return this.data[sessionId]?.[key] || null;
+    }
   }
-
-  destroySession(session_id) {
-      if (session_id in this.sessions) {
-          delete this.sessions[session_id];
-      }
-  }
-
-  generateSessionId() {
-      const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      let sessionId = '';
-      for (let i = 0; i < 16; i++) {
-          const randomIndex = Math.floor(Math.random() * chars.length);
-          sessionId += chars.charAt(randomIndex);
-      }
-      return sessionId;
-  }
-}
-
-class StateTracker {
-  trackProgress(session_id, quiz_state) {
-      if (session_id in sessionManager.sessions) {
-          sessionManager.sessions[session_id].current_question = quiz_state.current_question;
-      }
-  }
-}
-
-class DataStorage {
-  constructor() {
-      this.data = {};
-  }
-
-  storeData(session_id, key, value) {
-      if (!(session_id in this.data)) {
-          this.data[session_id] = {};
-      }
-      this.data[session_id][key] = value;
-  }
-
-  retrieveData(session_id, key) {
-      return this.data[session_id]?.[key] || null;
-  }
-}
-
-export { SessionManager, StateTracker, DataStorage };
+  
+  export { SessionManager, StateTracker, DataStorage };
+  

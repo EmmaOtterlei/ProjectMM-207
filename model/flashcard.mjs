@@ -9,19 +9,17 @@ class Flashcard {
     }
 
     async save() {
-        try {
-            if (!this.id) {
-                const createdFlashcard = await DBManager.createFlashcard(this);
-                if (!createdFlashcard || !createdFlashcard.id) {
-                    throw new Error("Failed to create flashcard.");
-                }
-                this.id = createdFlashcard.id; 
-            } else {
-                await DBManager.updateFlashcard(this);
-            }
-        } catch (error) {
-            console.error("Error saving/updating Flashcard:", error);
-            throw new Error("Failed to save/update flashcard. " + error.message);
+        if (!this.id) {
+            const result = await DBManager.createFlashcard(this).catch(e => {
+                console.error("Error saving Flashcard:", e);
+                throw new Error("Failed to save flashcard.");
+            });
+            this.id = result.id;
+        } else {
+            await DBManager.updateFlashcard(this).catch(e => {
+                console.error("Error updating Flashcard:", e);
+                throw new Error("Failed to update flashcard.");
+            });
         }
     }
 

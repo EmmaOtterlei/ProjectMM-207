@@ -1,30 +1,30 @@
 import pg from "pg";
 
 class DBManager {
-  #credentials = {};
-
-  constructor(connectionString) {
-    this.#credentials = {
-      connectionString,
-      ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
-    };
-  }
-
-  async executeQuery(query, params) {
-    const client = new pg.Client(this.#credentials);
-
-    try {
-      await client.connect();
-      console.log("Executing query:", query, "with params:", params);
-      const output = await client.query(query, params);
-      return output.rows;
-    } catch (error) {
-      console.error("Error executing query:", error);
-      throw new Error("Failed to execute database query.");
-    } finally {
-      client.end();
+    constructor(connectionString) {
+        this.client = new pg.Client({
+            connectionString,
+            ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+        });
     }
-  }
+
+    async connect() {
+        if (!this.client._connected) {
+            await this.client.connect();
+        }
+    }
+
+    async executeQuery(query, params = []) {
+        await this.connect();
+
+        try {
+            const { rows } = await this.client.query(query, params);
+            return rows;
+        } catch (error) {
+            console.error("Database query error:", error);
+            throw new Error("Database operation failed.");
+        }
+    }
 
   // User Operations
 
@@ -54,9 +54,10 @@ class DBManager {
     return user;
   }
 
-  async deleteUser(user) {
+  async deleteUser(userId) {
+    
     const query = 'DELETE FROM users WHERE id = $1 RETURNING *;';
-    const result = await this.executeQuery(query, [user.id]);
+    const result = await this.executeQuery(query, [userId]);
     
     // Confirm deletion
     if (result.length === 0) {
@@ -66,9 +67,11 @@ class DBManager {
     return user.id;
   }
 
-  async getUserById(user) {
+  async getUserById(id) {
     const query = 'SELECT * FROM users WHERE id = $1;';
-    const result = await this.executeQuery(query, [user.id]);
+    const params = [id]; // Ensure `id` is not `undefined`
+    console.log("findUserById with ID:", id); // Debugging
+    const result = await this.executeQuery(query, params);
     return result.length === 1 ? result[0] : null;
   }
 

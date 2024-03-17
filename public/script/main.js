@@ -1,5 +1,6 @@
 "use strict"
 
+
 async function postTo(url, data) {
     const header = {
         method: "POST",
@@ -12,6 +13,20 @@ async function postTo(url, data) {
     const respon = await fetch(url, header);
     return respon;
 }
+
+async function putTo(url, data) {
+    const options = {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    };
+
+    const response = await fetch(url, options);
+    return response;
+}
+
 
 async function hashPasswordClient(password) {
     // Call the server-side endpoint to hash the password

@@ -31,6 +31,35 @@ class User {
         }
     }
 
+    // In user.mjs, adjusting the update method
+    async update(updatedUserData) {
+    try {
+        // Ensure updatedUserData is an object; otherwise, initialize it as one
+        updatedUserData = updatedUserData || {};
+
+        // If a new password is provided and not undefined, hash it before updating
+        if (updatedUserData.newPassword !== undefined) {
+            this.pwsHash = await hashPassword(updatedUserData.newPassword);
+        }
+
+        // Update other fields only if they are provided and not undefined
+        if (updatedUserData.newEmail !== undefined) this.email = updatedUserData.newEmail;
+        if (updatedUserData.newUsername !== undefined) this.userName = updatedUserData.newUsername;
+
+        // Assuming DBManager.updateUser handles updates correctly as shown
+        await DBManager.updateUser({
+            id: this.id,
+            email: this.email,
+            pwsHash: this.pwsHash,
+            userName: this.userName,
+        });
+    } catch (error) {
+        console.error("Error updating User:", error);
+        throw new Error("Failed to update user. " + error.message);
+    }
+}
+
+
     async delete() {
         try {
             if (!this.id) {
