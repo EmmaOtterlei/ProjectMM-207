@@ -78,4 +78,42 @@ FLASHCARD_API.delete('/:id', async (req, res) => {
     }
 });
 
+FLASHCARD_API.get('/quiz/:deckId', async (req, res) => {
+    try {
+        const deckId = req.params.deckId;
+        // Implement logic to retrieve flashcards for the specified deckId
+        // Present flashcards one by one to the user
+        // Allow user to flip the card and submit their answer
+        // Provide immediate feedback to the user
+        // Keep track of user's performance (correct/incorrect answers)
+    } catch (error) {
+        console.error("Error in quiz mode:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
+    }
+});
+
+// Quiz Statistics
+FLASHCARD_API.get('/quiz/:userId/statistics', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        // Implement logic to retrieve quiz statistics for the specified userId
+        // Calculate and present statistics such as number of quizzes taken, average score, etc.
+    } catch (error) {
+        console.error("Error fetching quiz statistics:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
+    }
+});
+
+
+FLASHCARD_API.put('/deck/:deckId/organize', async (req, res) => {
+    try {
+        const deckId = req.params.deckId;
+        const { category } = req.body;
+        // Implement logic to update the category of the specified deckId
+    } catch (error) {
+        console.error("Error organizing deck:", error);
+        res.status(HTTPCodes.ServerSideErrorResponse.InternalServerError).json({ error: "Internal Server Error" });
+    }
+});
+
 export default FLASHCARD_API;
