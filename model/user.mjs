@@ -1,16 +1,22 @@
 import DBManager from '../modules/storageManager.mjs';
+import { hashPassword } from '../modules/pwsHash.mjs';
 
 class User {
-    constructor(userName = "", email = "", pwsHash = "") {
+    constructor( email = "", pwsHash = "", userName = "") {
         this.id = null;
-        this.userName = userName;
         this.email = email;
         this.pwsHash = pwsHash;
+        this.userName = userName;
     }
 
     async save() {
         try {
             if (!this.id) {
+                this.pwsHash = hashPassword(this.pwsHash);
+                const existingUser = await User.findUserByEmail(this.email);
+                if (existingUser) {
+                    throw new Error("User with this email already exists.");
+                }
                 const createdUser = await DBManager.createUser(this);
                 if (!createdUser || !createdUser.id) {
                     throw new Error("Failed to create user.");
@@ -37,7 +43,7 @@ class User {
         }
     }
 
-    static async getUserByEmail(email) {
+    static async findUserByEmail(email) {
         try {
             return await DBManager.getUserByEmail(email);
         } catch (error) {
@@ -46,7 +52,7 @@ class User {
         }
     }
 
-    static async getUserById(id) {
+    static async findUserById(id) {
         try {
             return await DBManager.getUserById(id);
         } catch (error) {
@@ -56,4 +62,4 @@ class User {
     }
 }
 
-export default User;
+export { User };

@@ -1,7 +1,8 @@
 import express from "express";
 import { HTTPCodes } from "../modules/httpErrorCodes.mjs";
 //import Logger from "../modules/Logger.mjs";
-import User from "../model/user.mjs";
+import { User } from "../model/user.mjs";
+import { hashPassword } from "../modules/pwsHash.mjs";
 
 const USER_API = express.Router();
 USER_API.use(express.json());
@@ -30,7 +31,7 @@ USER_API.post('/', async (req, res) => {
         }
 
         // Check if a user with the same email already exists
-        const existingUser = await User.getUserByEmail(email);
+        const existingUser = await User.findUserByEmail(email);
         if (existingUser) {
             console.error("User with this email already exists");
             return res.status(HTTPCodes.ClientSideErrorResponse.BadRequest).json({ error: "User with this email already exists" });
@@ -47,6 +48,52 @@ USER_API.post('/', async (req, res) => {
     }
 });
 
+USER_API.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const user = await User.findUserByEmail(email);
+        if (!user) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        console.log(`User object:`, user);
+        const hashedInputPassword = hashPassword(password);
+        console.log(`Input hash: ${hashedInputPassword}`);
+        // Correctly access the 'pwshash' property
+        console.log(`Stored hash: ${user.pwshash}`); // Corrected to 'pwshash'
+
+        if (user.pwshash !== hashedInputPassword) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        // Proceed with login success logic here
+        res.json({ message: "Login successful" });
+    } catch (error) {
+        console.error("Error during login process:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+
+
+
+
+
+USER_API.post('/hashPassword', (req, res) => {
+    const { password } = req.body;
+    try {
+        // Hash the password using your existing function
+        const hashedPassword = hashPassword(password);
+
+        // Send the hashed password back to the client
+        res.json({ hashedPassword });
+    } catch (error) {
+        console.error("Error hashing password:", error);
+        res.status(500).json({ error: "Error hashing password" });
+    }
+});
+
 // PUT (update) a user
 USER_API.put('/:id', async (req, res) => {
     try {
@@ -54,7 +101,7 @@ USER_API.put('/:id', async (req, res) => {
         const updatedUserData = req.body;
 
         // Update the user
-        const user = await User.getUserById(userId);
+        const user = await User.findUserById(userId);
         if (!user) {
             return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: "User not found" });
         }
@@ -76,7 +123,7 @@ USER_API.delete('/:id', async (req, res) => {
         const userId = req.params.id;
 
         // Delete the user
-        const user = await User.getUserById(userId);
+        const user = await User.findUserById(userId);
         if (!user) {
             return res.status(HTTPCodes.ClientSideErrorResponse.NotFound).json({ error: "User not found" });
         }

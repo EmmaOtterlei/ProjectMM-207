@@ -29,8 +29,8 @@ class DBManager {
   // User Operations
 
   async createUser(user) {
-    const query = 'INSERT INTO users (userName, email, pwsHash) VALUES ($1, $2, $3) RETURNING id;';
-    const result = await this.executeQuery(query, [user.userName, user.email, user.pwsHash]);
+    const query = 'INSERT INTO users (email, pwsHash, userName) VALUES ($1, $2, $3) RETURNING id;';
+    const result = await this.executeQuery(query, [ user.email, user.pwsHash, user.userName]);
 
     if (result && result.length === 1) {
       user.id = result[0].id;
@@ -54,29 +54,34 @@ class DBManager {
     return user;
   }
 
-  async deleteUser(userId) {
+  async deleteUser(user) {
     const query = 'DELETE FROM users WHERE id = $1 RETURNING *;';
-    const result = await this.executeQuery(query, [userId]);
+    const result = await this.executeQuery(query, [user.id]);
     
     // Confirm deletion
     if (result.length === 0) {
       throw new Error("Failed to delete user or user not found.");
     }
 
-    return userId;
+    return user.id;
   }
 
-  async getUserById(userId) {
+  async getUserById(user) {
     const query = 'SELECT * FROM users WHERE id = $1;';
-    const result = await this.executeQuery(query, [userId]);
+    const result = await this.executeQuery(query, [user.id]);
     return result.length === 1 ? result[0] : null;
   }
 
   async getUserByEmail(email) {
     const query = 'SELECT * FROM users WHERE email = $1;';
-    const result = await this.executeQuery(query, [email]);
-    return result.length === 1 ? result[0] : null;
-  }
+    try {
+        const result = await this.executeQuery(query, [email]);
+        return result.length === 1 ? result[0] : null;
+    } catch (error) {
+        console.error("Error executing query:", error);
+        throw new Error("Failed to fetch user by email. " + error.message);
+    }
+}
 
   // Deck Operations
 

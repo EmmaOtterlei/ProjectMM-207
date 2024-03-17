@@ -5,11 +5,99 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashcard</title>
+    <title>Flashcard app</title>
+    <script src="./script/main.js"></script>
+    <script src="./script/index.js"></script>
 </head>
 
+
 <body>
-    <script src="../source/app.mjs" type="module"></script>
+    <p>
+    <div id="containerMenu">
+
+    </div>
+    </p>
+    <p>
+    <div id="containerContent"></div>
+    </p>
+
+    <template id="MenuNotLoggedIn">
+        <div>
+            <div id="MenuButton">
+                <button type="button" id="Login">Login</button>
+                <button type="button" id="Create user">Create user</button>
+                <button type="button" id="Decks">Decks</button>
+                <button type="button" id="Flashcard Creation">Flashcard Creation</button>
+        </div>
+    </template>
+
+    <template id="MenuLoggedIn">
+        <div>
+            <div id="MenuButton">
+                <button type="button" id="My User">My User</button>
+                <button type="button" id="Log out">Log out</button>
+                <button type="button" id="Decks">Decks</button>
+                <button type="button" id="Flashcard Creation">Flashcard Creation</button>
+        </div>
+    </template>
+
+    <template id="createUserTemplate">
+        <div>
+            <h2>Create User</h2>
+            <label for="name">Name : </label><input type="text" id="name"><br>
+            <label for="email">Email: </label><input type="email" id="email"><br />
+            <label for="pwsHash"> Password: </label><input type="password" id="pwsHash"><br />
+            <button id="createUserButton">Create User</button>
+            <button id="loginRedirect">Go to Login</button>
+        </div>
+    </template>
+
+    <template id="loginTemplate">
+        <div id="loginForm">
+            <h2>Sign in</h2>
+            <input type="text" id="emailInput" placeholder="Email">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button id="loginButton">Login</button>
+            <button id="createUserRedirect">Create User</button>
+        </div>
+    </template>
+
+    <template id="decksTemplate">
+        <div id="decksContainer">
+            <input type="text" id="searchInput" placeholder="Search decks">
+            <div id="publicDecks">
+                <h2>Public Decks by Topic</h2>
+                <!-- Public decks will be dynamically generated here -->
+            </div>
+            <div id="privateDecks">
+                <h2>Your Private Decks</h2>
+                <!-- Private decks will be dynamically generated here if the user is logged in -->
+            </div>
+        </div>
+    </template>
+
+    <template id="flashcardCreationTemplate">
+        <div id="flashcardCreationForm">
+            <h2>Create Flashcards</h2>
+            <input type="text" id="deckNameInput" placeholder="Deck Name">
+            <input type="text" id="topicInput" placeholder="Topic">
+            <div id="flashcardsContainer">
+                <div class="flashcardInput">
+                    <input type="text" class="questionInput" placeholder="Question">
+                    <input type="text" class="answerInput" placeholder="Answer">
+                </div>
+                <!-- Additional flashcard inputs will be dynamically added here -->
+            </div>
+            <button id="addFlashcardButton">Add Flashcard</button>
+            <label for="visibilityToggle">Public</label>
+            <input type="checkbox" id="visibilityToggle">
+            <button id="saveButton">Save</button>
+        </div>
+    </template>
+
+
+
+
 </body>
 
 </html>
